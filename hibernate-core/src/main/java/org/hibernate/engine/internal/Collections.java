@@ -7,6 +7,8 @@
 package org.hibernate.engine.internal;
 
 import java.io.Serializable;
+import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
@@ -19,6 +21,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.Status;
 import org.hibernate.internal.CoreMessageLogger;
+import org.hibernate.internal.util.collections.IdentityMap;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.type.CollectionType;
@@ -177,6 +180,16 @@ public final class Collections {
 			// The CollectionEntry.isReached() stuff is just to detect any silly users
 			// who set up circular or shared references between/to collections.
 			if ( ce.isReached() ) {
+				IdentityMap<PersistentCollection, CollectionEntry> entries = (IdentityMap<PersistentCollection, CollectionEntry>) session.getPersistenceContext().getCollectionEntries();
+				long numOccurrences = entries.values().stream().filter(x -> x == ce).count();
+
+				if (numOccurrences > 1) {
+					for (Map.Entry entry : entries.entrySet()) {
+						if (entry.getValue() == ce) {
+							LOG.errorf("Found CollectionEntry context : %s role : %s loadedKey : %s  isReached : %s isProcessed : %s snapshot : %s", ce.hashCode(), ce.getRole(), ce.getLoadedKey(), ce.isReached(), ce.isProcessed(), ce.getSnapshot());
+						}
+					}
+				}
 				// We've been here beforeQuery
 				throw new HibernateException(
 						"Found shared references to a collection: " + type.getRole()
