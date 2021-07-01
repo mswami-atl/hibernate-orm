@@ -11,6 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
@@ -59,6 +60,7 @@ public final class CollectionEntry implements Serializable {
 	// "current" means the reference that was found during flush()
 	private transient CollectionPersister currentPersister;
 	private transient Serializable currentKey;
+	private final transient AtomicReference<String> setter = new AtomicReference<>();
 
 	/**
 	 * For newly wrapped collections, or dereferenced collection wrappers
@@ -291,6 +293,13 @@ public final class CollectionEntry implements Serializable {
 
 	public void setReached(boolean reached) {
 		this.reached = reached;
+		if("com.atlassian.confluence.core.ContentEntityObject.bodyContents".equals(role)) {
+			String newSetter = Thread.currentThread().getName();
+			String oldSetter = setter.getAndSet(newSetter);
+			if(oldSetter != null && !oldSetter.equals(newSetter)) {
+				LOG.errorf("Concurrency issue in CollectionEntry hashcode-> %s loadedKey-> %s oldSetter-> %s newSetter-> %s", hashCode(), loadedKey, oldSetter, newSetter);
+			}
+		}
 	}
 
 	public boolean isProcessed() {
