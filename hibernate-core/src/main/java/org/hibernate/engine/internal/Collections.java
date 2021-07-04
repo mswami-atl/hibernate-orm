@@ -179,7 +179,7 @@ public final class Collections {
 			if ( ce.isReached() ) {
 				// We've been here before
 				throw new HibernateException(
-						"Found shared references to a collection: " + type.getRole()
+						"Found shared references to a collection: " + type.getRole() + " loadedKey : " + ce.getLoadedKey()
 				);
 			}
 			ce.setReached( true );
