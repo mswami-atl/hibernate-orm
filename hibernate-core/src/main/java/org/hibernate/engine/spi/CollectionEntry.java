@@ -295,7 +295,9 @@ public final class CollectionEntry implements Serializable {
 		this.reached = reached;
 		if("com.atlassian.confluence.core.ContentEntityObject.bodyContents".equals(role)) {
 			String newSetter = Thread.currentThread().getName();
+			newSetter = newSetter.contains(" ") ? newSetter.split(" ")[0] : newSetter;
 			String oldSetter = setter.getAndSet(newSetter);
+
 			if(oldSetter != null && !oldSetter.equals(newSetter)) {
 				LOG.errorf("Concurrency issue in CollectionEntry hashcode-> %s loadedKey-> %s oldSetter-> %s newSetter-> %s", hashCode(), loadedKey, oldSetter, newSetter);
 			}
