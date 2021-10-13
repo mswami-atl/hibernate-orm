@@ -299,7 +299,7 @@ public final class CollectionEntry implements Serializable {
 			String oldSetter = setter.getAndSet(newSetter);
 
 			if(oldSetter != null && !oldSetter.equals(newSetter)) {
-				LOG.errorf("Concurrency issue in CollectionEntry hashcode-> %s loadedKey-> %s oldSetter-> %s newSetter-> %s", hashCode(), loadedKey, oldSetter, newSetter);
+				LOG.errorf("Concurrency issue in CollectionEntry hashcode-> %s loadedKey-> %s oldSetter-> %s newSetter-> %s ", hashCode(), loadedKey, oldSetter, newSetter);
 			}
 		}
 	}
